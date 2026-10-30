@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PHARMAPEDIA – medicine info in your language</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💊%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Gujarati:wght@400;600&family=Bricolage+Grotesque:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7fbfa;--card:#fff;--ink:#12202e;--mute:#55656f;--line:#d5e0dc;--acc:#0e7566;--accfg:#fff;--warn:#fdf1dc;--warnfg:#7a4207;--rx:#fde4e4;--rxfg:#8a1c1c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 Hind,"Noto Sans Devanagari","Noto Sans Gujarati",system-ui,sans-serif}
+main{max-width:720px;margin:0 auto;padding:28px 18px 48px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{font:800 22px "Bricolage Grotesque",Hind,sans-serif;letter-spacing:-.01em}
+.langs{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+.langs button{border:0;background:none;color:var(--mute);font:inherit;font-size:15px;padding:4px 14px;border-radius:999px;cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--acc);color:var(--accfg);font-weight:600}
+h1{font:800 clamp(30px,7vw,46px)/1.12 "Bricolage Grotesque",Hind,"Noto Sans Devanagari","Noto Sans Gujarati",sans-serif;letter-spacing:-.02em;margin:34px 0 8px}
+.sub{color:var(--mute);margin:0 0 22px;max-width:54ch}
+.sbox{position:relative}
+input[type=search]{width:100%;font:inherit;font-size:20px;padding:16px 18px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+input[type=search]:focus{outline:3px solid color-mix(in srgb,var(--acc) 45%,transparent);border-color:var(--acc)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px}
+.chips button{font:inherit;font-size:15px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:5px 14px;border-radius:999px;cursor:pointer}
+.chips button:hover{border-color:var(--acc)}
+.hint{color:var(--mute);font-size:14px;margin:6px 0 0}
+#out{margin-top:22px;display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.card h2{font:800 26px/1.2 "Bricolage Grotesque",Hind,"Noto Sans Devanagari","Noto Sans Gujarati",sans-serif;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 14px;color:var(--mute);font-size:15px}
+.tag{padding:2px 10px;border-radius:999px;background:var(--rx);color:var(--rxfg);font-size:14px;font-weight:600}
+.match{font-size:14px;color:var(--acc)}
+h3{font-size:15px;font-weight:600;color:var(--mute);margin:16px 0 2px}
+.card p{margin:0}
+.caution{background:var(--warn);color:var(--warnfg);border-radius:10px;padding:10px 14px;margin-top:6px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.listen{font:inherit;font-weight:600;border:0;background:var(--acc);color:var(--accfg);padding:9px 18px;border-radius:10px;cursor:pointer}
+.listen:focus-visible,.langs button:focus-visible,.chips button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.note{font-size:14px;color:var(--mute)}
+.empty{text-align:center;color:var(--mute);padding:26px 10px}
+footer{margin-top:34px;font-size:14px;color:var(--mute);border-top:1px solid var(--line);padding-top:16px}
+.srcs{margin-top:28px}.srcs a,.card a{color:var(--acc)}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><div class="logo">💊 PHARMAPEDIA</div>
+<div class="langs" role="group" aria-label="Language">
+<button data-l="en" aria-pressed="true">English</button><button data-l="hi" aria-pressed="false">हिन्दी</button><button data-l="gu" aria-pressed="false">ગુજરાતી</button></div></div>
+<h1 id="t1"></h1>
+<p class="sub" id="t2"></p>
+<div class="sbox"><input id="q" type="search" autocomplete="off" spellcheck="false"></div>
+<div class="chips" id="chips"></div>
+<p class="hint" id="hint"></p>
+<div id="out" aria-live="polite"></div>
+<section id="srcs" class="srcs"></section>
+<footer id="foot"></footer>
+</main>
+<script>
+const UI={
+en:{t1:"Find a medicine in your own language",t2:"Type a medicine or brand name in English, Hindi or Gujarati. Small spelling mistakes are fine.",ph:"Try: Dolo, डोलो, ડોલો, paracetmol",hint:"Try a name:",use:"What it is used for",cau:"Important cautions",br:"Brand names",rx:"Needs a doctor’s prescription",listen:"🔊 Listen",stop:"⏹ Stop",none:"No medicine found. Check the spelling or try another name.",start:"Search for a medicine, or tap a name above.",via:"Matched",gen:"Generic versions usually cost less. Ask your pharmacist about the generic name.",nov:"Voice for this language is not available on this device.",foot:"This is a learning prototype with sample content for 6 medicines. It is not medical advice and has not yet been reviewed by a pharmacist. Always read the label and ask your doctor or pharmacist before taking any medicine.",dose:"How to take it (adults)",max:"Do not exceed",kid:"Children, pregnant women and older adults need different doses. Ask a doctor or pharmacist before giving any medicine to a child.",code:"en-IN"},
+hi:{t1:"अपनी भाषा में दवा की जानकारी पाएं",t2:"दवा या ब्रांड का नाम अंग्रेज़ी, हिन्दी या गुजराती में लिखें। छोटी वर्तनी की गलती चलेगी।",ph:"जैसे: Dolo, डोलो, ડોલો, paracetmol",hint:"कोई नाम आज़माएं:",use:"किस काम आती है",cau:"ज़रूरी सावधानियां",br:"ब्रांड नाम",rx:"डॉक्टर की पर्ची ज़रूरी है",listen:"🔊 सुनें",stop:"⏹ रोकें",none:"कोई दवा नहीं मिली। वर्तनी जांचें या दूसरा नाम आज़माएं।",start:"दवा खोजें, या ऊपर किसी नाम पर टैप करें।",via:"मिलान",gen:"जेनेरिक दवाएं आमतौर पर सस्ती होती हैं। अपने फार्मासिस्ट से जेनेरिक नाम के बारे में पूछें।",nov:"इस डिवाइस पर इस भाषा की आवाज़ उपलब्ध नहीं है।",foot:"यह सीखने के लिए बनाया गया प्रोटोटाइप है, जिसमें 6 दवाओं की नमूना जानकारी है। यह चिकित्सकीय सलाह नहीं है और अभी किसी फार्मासिस्ट ने इसकी जांच नहीं की है। कोई भी दवा लेने से पहले लेबल पढ़ें और डॉक्टर या फार्मासिस्ट से पूछें।",dose:"कैसे लें (वयस्कों के लिए)",max:"इससे ज्यादा न लें",kid:"बच्चों, गर्भवती महिलाओं और बुजुर्गों के लिए मात्रा अलग होती है। बच्चे को कोई भी दवा देने से पहले डॉक्टर या फार्मासिस्ट से पूछें।",code:"hi-IN"},
+gu:{t1:"તમારી ભાષામાં દવાની માહિતી મેળવો",t2:"દવા કે બ્રાન્ડનું નામ અંગ્રેજી, હિન્દી કે ગુજરાતીમાં લખો. નાની જોડણીની ભૂલ ચાલશે.",ph:"જેમ કે: Dolo, डोलो, ડોલો, paracetmol",hint:"કોઈ નામ અજમાવો:",use:"શેના માટે વપરાય છે",cau:"મહત્વની સાવચેતીઓ",br:"બ્રાન્ડના નામ",rx:"ડૉક્ટરની ચિઠ્ઠી જરૂરી છે",listen:"🔊 સાંભળો",stop:"⏹ બંધ કરો",none:"કોઈ દવા મળી નથી. જોડણી તપાસો અથવા બીજું નામ અજમાવો.",start:"દવા શોધો, અથવા ઉપર કોઈ નામ પર ટૅપ કરો.",via:"મેળ",gen:"જેનેરિક દવાઓ સામાન્ય રીતે સસ્તી હોય છે. તમારા ફાર્માસિસ્ટને જેનેરિક નામ વિશે પૂછો.",nov:"આ ડિવાઇસ પર આ ભાષાનો અવાજ ઉપલબ્ધ નથી.",foot:"આ શીખવા માટેનો પ્રોટોટાઇપ છે, જેમાં 6 દવાઓની નમૂના માહિતી છે. તે તબીબી સલાહ નથી અને હજી કોઈ ફાર્માસિસ્ટે તેની ચકાસણી કરી નથી. કોઈ પણ દવા લેતા પહેલાં લેબલ વાંચો અને ડૉક્ટર કે ફાર્માસિસ્ટને પૂછો.",dose:"કેવી રીતે લેવી (પુખ્ત વયના માટે)",max:"આનાથી વધુ ન લો",kid:"બાળકો, ગર્ભવતી મહિલાઓ અને વડીલો માટે માત્રા અલગ હોય છે. બાળકને કોઈ પણ દવા આપતા પહેલાં ડૉક્ટર કે ફાર્માસિસ્ટને પૂછો.",code:"gu-IN"}};
+const D=[
+{n:{en:"Paracetamol",hi:"पैरासिटामोल",gu:"પેરાસિટામોલ"},br:["Crocin","Dolo","Calpol"],al:["acetaminophen","पेरासिटामोल","क्रोसिन","डोलो","ક્રોસિન","ડોલો","પેરાસીટામોલ","કેલપોલ"],rx:0,
+c:{en:"Pain reliever and fever reducer",hi:"दर्द और बुखार कम करने वाली दवा",gu:"દુખાવો અને તાવ ઘટાડતી દવા"},
+u:{en:"Used for fever and mild to moderate pain such as headache, body ache and toothache.",hi:"बुखार और हल्के से मध्यम दर्द, जैसे सिरदर्द, बदन दर्द और दांत दर्द में उपयोग होती है।",gu:"તાવ અને હળવાથી મધ્યમ દુખાવા, જેમ કે માથાનો દુખાવો, શરીરનો દુખાવો અને દાંતના દુખાવામાં વપરાય છે."},
+w:{en:"Do not take more than the label or your doctor says; too much can damage the liver. Cold and flu medicines may also contain paracetamol, so check labels. Take extra care with liver disease or heavy alcohol use.",hi:"लेबल या डॉक्टर की बताई मात्रा से ज्यादा न लें; ज्यादा मात्रा से लिवर खराब हो सकता है। सर्दी-जुकाम की दवाओं में भी पैरासिटामोल हो सकता है, इसलिए लेबल देखें। लिवर की बीमारी या ज्यादा शराब पीने वाले विशेष सावधानी रखें।",gu:"લેબલ અથવા ડૉક્ટરે કહેલી માત્રા કરતાં વધુ ન લો; વધુ માત્રાથી લીવરને નુકસાન થઈ શકે છે. શરદીની દવાઓમાં પણ પેરાસિટામોલ હોઈ શકે છે, તેથી લેબલ તપાસો. લીવરની બીમારી કે વધુ દારૂ પીનારાએ વિશેષ સાવચેતી રાખવી."}},
+{n:{en:"Ibuprofen",hi:"आइबुप्रोफेन",gu:"આઈબુપ્રોફેન"},br:["Brufen","Ibugesic"],al:["इबुप्रोफेन","ब्रूफेन","ઇબુપ્રોફેન","બ્રુફેન"],rx:0,
+c:{en:"Pain, swelling and fever reliever (NSAID)",hi:"दर्द, सूजन और बुखार की दवा (NSAID)",gu:"દુખાવો, સોજો અને તાવની દવા (NSAID)"},
+u:{en:"Used for pain, swelling and fever, such as joint pain, period pain and muscle pain.",hi:"दर्द, सूजन और बुखार में, जैसे जोड़ों का दर्द, माहवारी का दर्द और मांसपेशियों का दर्द।",gu:"દુખાવો, સોજો અને તાવમાં, જેમ કે સાંધાનો દુખાવો, માસિકનો દુખાવો અને સ્નાયુનો દુખાવો."},
+w:{en:"Take with food, as it can irritate the stomach. Avoid with stomach ulcers, kidney problems, or asthma triggered by painkillers. Do not use in pregnancy unless your doctor advises.",hi:"खाने के साथ लें, क्योंकि इससे पेट में जलन हो सकती है। पेट के अल्सर, किडनी की समस्या या दर्द की दवा से बढ़ने वाले दमा में न लें। गर्भावस्था में डॉक्टर की सलाह के बिना न लें।",gu:"જમ્યા પછી લો, કારણ કે તે પેટમાં બળતરા કરી શકે છે. પેટના અલ્સર, કિડનીની સમસ્યા અથવા દુખાવાની દવાથી વધતી અસ્થમામાં ન લો. ગર્ભાવસ્થામાં ડૉક્ટરની સલાહ વિના ન લો."}},
+{n:{en:"Cetirizine",hi:"सेटिरिज़िन",gu:"સેટિરિઝિન"},br:["Cetzine","Okacet","Alerid"],al:["सिट्रिज़िन","सेट्ज़ाइन","સિટિરિઝિન"],rx:0,
+c:{en:"Antihistamine for allergies",hi:"एलर्जी की एंटीहिस्टामिन दवा",gu:"એલર્જી માટેની એન્ટિહિસ્ટામિન દવા"},
+u:{en:"Used for allergy symptoms like sneezing, runny nose, itchy eyes and skin rashes.",hi:"एलर्जी के लक्षण जैसे छींक, बहती नाक, आंखों में खुजली और त्वचा पर चकत्ते में।",gu:"એલર્જીના લક્ષણો જેમ કે છીંક, વહેતું નાક, આંખમાં ખંજવાળ અને ચામડી પર ચકામાં માટે."},
+w:{en:"May cause drowsiness, so be careful when driving or using machines, and avoid alcohol. Ask a doctor first in pregnancy, kidney disease, or for young children.",hi:"नींद आ सकती है, इसलिए गाड़ी या मशीन चलाते समय सावधान रहें और शराब से बचें। गर्भावस्था, किडनी रोग या छोटे बच्चों के लिए पहले डॉक्टर से पूछें।",gu:"ઊંઘ આવી શકે છે, તેથી વાહન કે મશીન ચલાવતી વખતે સાવચેત રહો અને દારૂથી દૂર રહો. ગર્ભાવસ્થા, કિડનીના રોગ કે નાના બાળકો માટે પહેલાં ડૉક્ટરને પૂછો."}},
+{n:{en:"ORS (Oral Rehydration Salts)",hi:"ओआरएस (ओरल रिहाइड्रेशन सॉल्ट)",gu:"ઓઆરએસ (ઓરલ રિહાઇડ્રેશન સોલ્ટ)"},br:["Electral","ORSL"],al:["ors","oral rehydration","इलेक्ट्रल","ओ आर एस","ઇલેક્ટ્રાલ","ઓ આર એસ"],rx:0,
+c:{en:"Replaces body water and salts",hi:"शरीर में पानी और नमक की पूर्ति करता है",gu:"શરીરમાં પાણી અને ક્ષારની પૂર્તિ કરે છે"},
+u:{en:"Replaces water and salts lost in diarrhoea, vomiting or heavy sweating.",hi:"दस्त, उल्टी या ज्यादा पसीने से कम हुए पानी और नमक की पूर्ति करता है।",gu:"ઝાડા, ઉલટી કે વધુ પરસેવાથી ઘટેલા પાણી અને ક્ષારની પૂર્તિ કરે છે."},
+w:{en:"Mix only in the amount of clean water written on the packet; do not add extra sugar or salt. See a doctor if there is blood in stool, high fever, or a child or elderly person cannot keep fluids down.",hi:"पैकेट पर लिखी मात्रा के साफ पानी में ही घोलें; अलग से चीनी या नमक न डालें। मल में खून हो, तेज बुखार हो, या बच्चा/बुजुर्ग पानी न रोक पाए तो डॉक्टर को दिखाएं।",gu:"પેકેટ પર લખેલા પ્રમાણમાં જ સ્વચ્છ પાણીમાં ઓગાળો; વધારાની ખાંડ કે મીઠું ન ઉમેરો. મળમાં લોહી હોય, તીવ્ર તાવ હોય, અથવા બાળક/વડીલ પ્રવાહી ટકાવી ન શકે તો ડૉક્ટરને બતાવો."}},
+{n:{en:"Omeprazole",hi:"ओमेप्राज़ोल",gu:"ઓમેપ્રાઝોલ"},br:["Omez","Prilosec"],al:["ओमेज़","ओमेप्राजोल","ઓમેઝ"],rx:0,
+c:{en:"Reduces stomach acid",hi:"पेट का एसिड कम करती है",gu:"પેટનો એસિડ ઘટાડે છે"},
+u:{en:"Used for acidity, heartburn and stomach ulcers.",hi:"एसिडिटी, सीने की जलन और पेट के अल्सर में उपयोगी।",gu:"એસિડિટી, છાતીમાં બળતરા અને પેટના અલ્સરમાં ઉપયોગી."},
+w:{en:"Usually taken on an empty stomach before a meal. Use for a long time only on a doctor’s advice. See a doctor if you have trouble swallowing, black stools or weight loss.",hi:"आमतौर पर खाने से पहले खाली पेट ली जाती है। लंबे समय तक सिर्फ डॉक्टर की सलाह से लें। निगलने में तकलीफ, काला मल या वजन घटे तो डॉक्टर को दिखाएं।",gu:"સામાન્ય રીતે જમતા પહેલાં ખાલી પેટે લેવાય છે. લાંબા સમય સુધી ફક્ત ડૉક્ટરની સલાહથી લો. ગળવામાં તકલીફ, કાળો મળ કે વજન ઘટે તો ડૉક્ટરને બતાવો."}},
+{n:{en:"Amoxicillin",hi:"एमोक्सिसिलिन",gu:"એમોક્સિસિલિન"},br:["Mox","Novamox"],al:["amoxycillin","अमोक्सिसिलिन","मॉक्स","મોક્સ","એમોક્સીસિલિન"],rx:1,
+c:{en:"Antibiotic",hi:"एंटीबायोटिक",gu:"એન્ટિબાયોટિક"},
+u:{en:"An antibiotic for certain bacterial infections, such as ear, throat or chest infections. It does not work on colds or flu, which are caused by viruses.",hi:"कुछ बैक्टीरिया संक्रमणों, जैसे कान, गले या छाती के संक्रमण, की एंटीबायोटिक। यह सर्दी-जुकाम या फ्लू (वायरस) पर असर नहीं करती।",gu:"કેટલાક બેક્ટેરિયલ ચેપ, જેમ કે કાન, ગળા કે છાતીના ચેપ, માટે એન્ટિબાયોટિક. તે શરદી કે ફ્લૂ (વાયરસ) પર અસર કરતી નથી."},
+w:{en:"Take only as prescribed and finish the full course. Do not take if you are allergic to penicillin. Stop and get help at once if you get a rash, swelling or trouble breathing.",hi:"जैसा डॉक्टर ने बताया वैसे ही लें और कोर्स पूरा करें। पेनिसिलिन से एलर्जी हो तो न लें। दाने, सूजन या सांस लेने में तकलीफ हो तो दवा रोककर तुरंत मदद लें।",gu:"ડૉક્ટરે કહ્યા મુજબ જ લો અને કોર્સ પૂરો કરો. પેનિસિલિનની એલર્જી હોય તો ન લો. ચકામાં, સોજો કે શ્વાસ લેવામાં તકલીફ થાય તો દવા બંધ કરી તરત મદદ લો."}}];
+const DOSE=[
+{h:{en:"Adults: one 500 mg to 650 mg tablet when needed, up to 3 to 4 times a day, with at least 4 to 6 hours between doses. Can be taken with or without food.",hi:"वयस्क: ज़रूरत पड़ने पर 500 mg से 650 mg की एक गोली, दिन में अधिकतम 3 से 4 बार, दो खुराक के बीच कम से कम 4 से 6 घंटे का अंतर रखें। खाने के साथ या बिना, दोनों तरह ले सकते हैं।",gu:"પુખ્ત: જરૂર પડે ત્યારે 500 mg થી 650 mg ની એક ગોળી, દિવસમાં વધુમાં વધુ 3 થી 4 વાર, બે ડોઝ વચ્ચે ઓછામાં ઓછો 4 થી 6 કલાકનો અંતર રાખો. જમ્યા સાથે કે વગર, બંને રીતે લઈ શકાય."},
+m:{en:"No more than 4,000 mg (4 g) in 24 hours, counting every medicine that contains paracetamol. Ask your doctor for a lower limit if you have liver disease, drink alcohol regularly, or are underweight. Do not use for more than 3 days for fever or 10 days for pain without seeing a doctor.",hi:"24 घंटे में कुल 4,000 mg (4 g) से ज्यादा न लें, इसमें पैरासिटामोल वाली सभी दवाएं गिनें। लिवर की बीमारी हो, नियमित शराब पीते हों या वजन बहुत कम हो तो डॉक्टर से कम सीमा पूछें। बुखार में 3 दिन और दर्द में 10 दिन से ज्यादा बिना डॉक्टर को दिखाए न लें।",gu:"24 કલાકમાં કુલ 4,000 mg (4 g) થી વધુ ન લો, તેમાં પેરાસિટામોલ ધરાવતી બધી દવાઓ ગણો. લીવરની બીમારી હોય, નિયમિત દારૂ પીતા હોવ કે વજન ઘણું ઓછું હોય તો ડૉક્ટર પાસેથી ઓછી મર્યાદા પૂછો. તાવમાં 3 દિવસ અને દુખાવામાં 10 દિવસથી વધુ ડૉક્ટરને બતાવ્યા વગર ન લો."}},
+{h:{en:"Adults: 200 mg to 400 mg when needed, every 6 to 8 hours (up to 3 times a day), always after food or with milk.",hi:"वयस्क: ज़रूरत पड़ने पर 200 mg से 400 mg, हर 6 से 8 घंटे में (दिन में अधिकतम 3 बार), हमेशा खाने के बाद या दूध के साथ।",gu:"પુખ્ત: જરૂર પડે ત્યારે 200 mg થી 400 mg, દર 6 થી 8 કલાકે (દિવસમાં વધુમાં વધુ 3 વાર), હંમેશાં જમ્યા પછી અથવા દૂધ સાથે."},
+m:{en:"No more than 1,200 mg in 24 hours unless a doctor prescribes more. Do not use for more than 3 days for fever or 10 days for pain without a doctor’s advice. Do not combine with other painkillers such as diclofenac or aspirin.",hi:"डॉक्टर के बताए बिना 24 घंटे में 1,200 mg से ज्यादा न लें। बुखार में 3 दिन और दर्द में 10 दिन से ज्यादा बिना डॉक्टर की सलाह के न लें। डाइक्लोफेनाक या एस्पिरिन जैसी दूसरी दर्द की दवाओं के साथ न मिलाएं।",gu:"ડૉક્ટર ન કહે ત્યાં સુધી 24 કલાકમાં 1,200 mg થી વધુ ન લો. તાવમાં 3 દિવસ અને દુખાવામાં 10 દિવસથી વધુ ડૉક્ટરની સલાહ વગર ન લો. ડાયક્લોફેનાક કે એસ્પિરિન જેવી બીજી દુખાવાની દવાઓ સાથે ભેળવશો નહીં."}},
+{h:{en:"Adults: one 10 mg tablet once a day, usually in the evening or at bedtime because it can cause sleepiness. Can be taken with or without food.",hi:"वयस्क: 10 mg की एक गोली दिन में एक बार, आमतौर पर शाम को या सोने से पहले, क्योंकि इससे नींद आ सकती है। खाने के साथ या बिना ले सकते हैं।",gu:"પુખ્ત: 10 mg ની એક ગોળી દિવસમાં એક વાર, સામાન્ય રીતે સાંજે કે સૂતા પહેલાં, કારણ કે તેનાથી ઊંઘ આવી શકે છે. જમ્યા સાથે કે વગર લઈ શકાય."},
+m:{en:"Do not take more than one 10 mg tablet in 24 hours. Do not take two allergy tablets together unless a doctor says so.",hi:"24 घंटे में 10 mg की एक से ज्यादा गोली न लें। डॉक्टर के कहे बिना दो एलर्जी की गोलियां साथ न लें।",gu:"24 કલાકમાં 10 mg ની એક કરતાં વધુ ગોળી ન લો. ડૉક્ટર ન કહે ત્યાં સુધી એલર્જીની બે ગોળીઓ સાથે ન લો."}},
+{h:{en:"Dissolve one packet in the exact amount of clean (boiled and cooled) water written on it. Sip small amounts often, and have a glass after every loose stool or vomit. Keep covered and use within 24 hours; throw away what is left.",hi:"एक पैकेट को उस पर लिखी सही मात्रा के साफ (उबले और ठंडे किए) पानी में घोलें। थोड़ा-थोड़ा करके बार-बार पिएं, और हर बार दस्त या उल्टी के बाद एक गिलास लें। ढककर रखें और 24 घंटे के अंदर उपयोग करें; बचा हुआ फेंक दें।",gu:"એક પેકેટને તેના પર લખેલા ચોક્કસ પ્રમાણના સ્વચ્છ (ઉકાળીને ઠંડા કરેલા) પાણીમાં ઓગાળો. થોડું થોડું કરીને વારંવાર પીવો, અને દરેક વખતે ઝાડા કે ઉલટી પછી એક ગ્લાસ લો. ઢાંકીને રાખો અને 24 કલાકમાં વાપરી લો; વધેલું ફેંકી દો."},
+m:{en:"Do not make the solution stronger or weaker than the packet says. Do not mix it into milk, juice or soft drinks. See a doctor if diarrhoea lasts more than 2 days (sooner for children and older adults).",hi:"घोल को पैकेट पर लिखे से ज्यादा गाढ़ा या पतला न बनाएं। इसे दूध, जूस या कोल्ड ड्रिंक में न मिलाएं। दस्त 2 दिन से ज्यादा चले तो डॉक्टर को दिखाएं (बच्चों और बुजुर्गों में जल्दी)।",gu:"દ્રાવણ પેકેટ પર લખ્યા કરતાં વધુ ઘટ્ટ કે પાતળું ન બનાવો. તેને દૂધ, જ્યુસ કે કોલ્ડ ડ્રિંકમાં ન ભેળવો. ઝાડા 2 દિવસથી વધુ ચાલે તો ડૉક્ટરને બતાવો (બાળકો અને વડીલોમાં વહેલા)."}},
+{h:{en:"Adults: usually one 20 mg capsule once a day, 30 minutes before breakfast. Swallow whole with water; do not chew or crush.",hi:"वयस्क: आमतौर पर 20 mg का एक कैप्सूल दिन में एक बार, नाश्ते से 30 मिनट पहले। पानी के साथ पूरा निगलें; चबाएं या कुचलें नहीं।",gu:"પુખ્ત: સામાન્ય રીતે 20 mg ની એક કેપ્સ્યુલ દિવસમાં એક વાર, નાસ્તાના 30 મિનિટ પહેલાં. પાણી સાથે આખી ગળો; ચાવશો કે ભૂકો કરશો નહીં."},
+m:{en:"Do not take more than the dose on your prescription. For self-treated acidity, do not use for more than 14 days in a row without a doctor’s advice.",hi:"पर्ची में लिखी मात्रा से ज्यादा न लें। खुद से एसिडिटी का इलाज करते समय डॉक्टर की सलाह के बिना लगातार 14 दिन से ज्यादा न लें।",gu:"ચિઠ્ઠીમાં લખેલી માત્રા કરતાં વધુ ન લો. જાતે એસિડિટીની સારવાર કરતી વખતે ડૉક્ટરની સલાહ વગર સતત 14 દિવસથી વધુ ન લો."}},
+{h:{en:"Dose and number of days depend on the infection, so follow your prescription exactly. It is commonly taken 2 or 3 times a day, evenly spaced (for example every 8 or 12 hours), for about 5 to 7 days. Can be taken with or without food.",hi:"मात्रा और दिनों की संख्या संक्रमण पर निर्भर करती है, इसलिए पर्ची में लिखे अनुसार ही लें। आमतौर पर दिन में 2 या 3 बार, बराबर अंतर पर (जैसे हर 8 या 12 घंटे), लगभग 5 से 7 दिन तक ली जाती है। खाने के साथ या बिना ले सकते हैं।",gu:"માત્રા અને દિવસોની સંખ્યા ચેપ પર આધાર રાખે છે, તેથી ચિઠ્ઠીમાં લખ્યા મુજબ જ લો. સામાન્ય રીતે દિવસમાં 2 કે 3 વાર, સરખા અંતરે (જેમ કે દર 8 કે 12 કલાકે), લગભગ 5 થી 7 દિવસ લેવાય છે. જમ્યા સાથે કે વગર લઈ શકાય."},
+m:{en:"Never take more than prescribed, never share it, and do not save leftovers. Do not stop early just because you feel better. If you miss a dose, take it when you remember unless the next dose is near; never double up.",hi:"पर्ची से ज्यादा कभी न लें, किसी और को न दें और बची हुई दवा संभालकर न रखें। ठीक लगने पर बीच में बंद न करें। खुराक छूट जाए तो याद आते ही लें, पर अगली खुराक का समय पास हो तो छोड़ दें; दोगुनी न लें।",gu:"ચિઠ્ઠી કરતાં વધુ ક્યારેય ન લો, બીજાને ન આપો અને વધેલી દવા સાચવી ન રાખો. સારું લાગે એટલે વચ્ચે બંધ ન કરો. ડોઝ ચૂકી જાવ તો યાદ આવે ત્યારે લો, પણ પછીનો ડોઝ નજીક હોય તો છોડી દો; બમણો ન લો."}}];
+// ===== EDIT THIS PART AS YOU VERIFY EACH MEDICINE (same order as the list above) =====
+// status: "draft" or "verified". reviewed: name of the pharmacist/faculty who checked it.
+// sources: [{name:"openFDA label", url:"https://..."}]  (only list sources you really used)
+const META=[
+{status:"draft",reviewed:"",sources:[]},{status:"draft",reviewed:"",sources:[]},{status:"draft",reviewed:"",sources:[]},
+{status:"draft",reviewed:"",sources:[]},{status:"draft",reviewed:"",sources:[]},{status:"draft",reviewed:"",sources:[]}];
+// Sources and permissions table shown at the bottom of the page: {name, url, license, checked}
+const SOURCES=[];
+
+const norm=s=>s.normalize("NFC").toLowerCase().replace(/[\s.\-_()]/g,"");
+D.forEach(d=>{d.keys=[d.n.en,d.n.hi,d.n.gu,...d.br,...d.al].map(a=>[a,norm(a)]);d.keys.push(["Paracetamol".length?d.n.en.split(" ")[0]:"",norm(d.n.en.split(" ")[0])])});
+function lev(a,b){const m=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=m[0];m[0]=i;for(let j=1;j<=b.length;j++){const t=m[j];m[j]=Math.min(m[j]+1,m[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t}}return m[b.length]}
+function sc(q,a){if(a===q)return 100;if(a.startsWith(q))return 80+10*q.length/a.length;if(q.length>=2&&a.includes(q))return 60;if(q.length>=4){const d=lev(q,a),m=Math.max(q.length,a.length);if(d<=2&&d/m<.34)return 50-5*d}return 0}
+function search(raw){const q=norm(raw);if(!q)return[];const r=[];D.forEach(d=>{let best=0,via="";d.keys.forEach(([o,k])=>{const s=sc(q,k);if(s>best){best=s;via=o}});if(best)r.push({d,best,via})});return r.sort((a,b)=>b.best-a.best)}
+let L="en",speaking=false;
+const $=id=>document.getElementById(id),esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function card({d,via},i){const u=UI[L];const same=norm(via)===norm(d.n[L]);const ds=DOSE[D.indexOf(d)];
+return `<article class="card"><h2>${esc(d.n[L])}</h2><div class="meta"><span>${esc(d.c[L])}</span>${d.rx?`<span class="tag">${u.rx}</span>`:""}${same?"":`<span class="match">${u.via}: ${esc(via)}</span>`}</div>
+<h3>${u.use}</h3><p>${esc(d.u[L])}</p><h3>${u.dose}</h3><p>${esc(ds.h[L])}</p><h3>${u.max}</h3><p class="caution">${esc(ds.m[L])}</p><p class="note" style="margin-top:8px">${u.kid}</p><h3>${u.cau}</h3><p class="caution">${esc(d.w[L])}</p>
+<h3>${u.br}</h3><p>${d.br.map(esc).join(", ")}</p><p class="note" style="margin-top:10px">${u.gen}</p>
+${metaHtml(d)}<div class="row"><button class="listen" data-i="${i}">${u.listen}</button><span class="note" id="nv${i}"></span></div></article>`}
+function metaHtml(d){const m=META[D.indexOf(d)]||{};
+const s=(m.sources||[]).map(x=>x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`:esc(x.name)).join(", ");
+return `<p class="note" style="margin-top:12px">${m.status==="verified"?"✔ Verified":"⚠ Draft, not yet verified"}${m.reviewed?" · Reviewed by "+esc(m.reviewed):""}${s?" · Sources: "+s:""}</p>`}
+let cur=[];
+function render(){const u=UI[L],raw=$("q").value.trim();document.documentElement.lang=L;
+$("t1").textContent=u.t1;$("t2").textContent=u.t2;$("q").placeholder=u.ph;$("hint").textContent=u.hint;$("foot").textContent=u.foot;
+$("srcs").innerHTML=SOURCES.length?"<h3>Sources and permissions</h3>"+SOURCES.map(s=>`<p class="note"><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a> · ${esc(s.license)} · checked ${esc(s.checked)}</p>`).join(""):"";
+$("chips").innerHTML=D.map((d,i)=>`<button data-c="${i}">${esc(d.n[L].split(" (")[0])}</button>`).join("");
+document.querySelectorAll(".langs button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===L));
+cur=search(raw);
+$("out").innerHTML=!raw?`<div class="empty">${u.start}</div>`:cur.length?cur.map(card).join(""):`<div class="empty">${u.none}</div>`}
+function speak(i){const u=UI[L],r=cur[i];if(!r||!window.speechSynthesis)return;const note=$("nv"+i);speechSynthesis.cancel();
+if(speaking){speaking=false;render();return}
+const ds=DOSE[D.indexOf(r.d)],t=`${r.d.n[L]}. ${r.d.u[L]} ${u.dose}. ${ds.h[L]} ${u.max}. ${ds.m[L]} ${u.cau}. ${r.d.w[L]}`,ut=new SpeechSynthesisUtterance(t);ut.lang=u.code;
+const ok=speechSynthesis.getVoices().some(v=>v.lang.replace("_","-").toLowerCase().startsWith(u.code.slice(0,2)));
+if(!ok&&note)note.textContent=u.nov;
+ut.onend=ut.onerror=()=>{speaking=false};speaking=true;speechSynthesis.speak(ut)}
+$("q").addEventListener("input",()=>{if(window.speechSynthesis)speechSynthesis.cancel();speaking=false;render()});
+document.addEventListener("click",e=>{const l=e.target.closest(".langs button"),c=e.target.closest("[data-c]"),s=e.target.closest(".listen");
+if(l){L=l.dataset.l;if(window.speechSynthesis)speechSynthesis.cancel();speaking=false;render()}
+else if(c){$("q").value=D[c.dataset.c].n.en.split(" ")[0];render()}
+else if(s)speak(+s.dataset.i)});
+render();
+</script>
+</body>
+</html>
