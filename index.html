@@ -44,6 +44,7 @@ h3{font-size:15px;font-weight:600;color:var(--mute);margin:16px 0 2px}
 .empty{text-align:center;color:var(--mute);padding:26px 10px}
 footer{margin-top:34px;font-size:14px;color:var(--mute);border-top:1px solid var(--line);padding-top:16px}
 .srcs{margin-top:28px}.srcs a,.card a{color:var(--acc)}
+.fda{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:8px 12px}.fda summary{cursor:pointer;font-weight:600;color:var(--acc)}.fdabox{margin-top:8px}.fdatxt{white-space:pre-wrap;max-height:220px;overflow:auto;font-size:15px}
 </style>
 </head>
 <body>
@@ -58,53 +59,6 @@ footer{margin-top:34px;font-size:14px;color:var(--mute);border-top:1px solid var
 <p class="hint" id="hint"></p>
 <div id="out" aria-live="polite"></div>
 <section id="srcs" class="srcs"></section>
-  <section class="card" id="about">
-  <h2>About PHARMAPEDIA</h2>
-  <p>PHARMAPEDIA is an educational platform designed to make pharmaceutical sciences easier to understand and accessible to learners.</p>
-  <p>Our goal is to provide clear explanations and structured learning resources for pharmacy students.</p>
-</section>
-
-<section class="card" id="mission">
-  <h2>Our Mission</h2>
-  <p>To simplify pharmaceutical education through understandable, accessible and evidence-based learning resources.</p>
-  <h2>Our Vision</h2>
-  <p>To make pharmaceutical education accessible to everyone.</p>
-</section>
-
-<section class="card" id="subjects">
-  <h2>Explore Subjects</h2>
-  <ul>
-    <li>Pharmaceutics</li>
-    <li>Pharmacology</li>
-    <li>Pharmacognosy</li>
-    <li>Pharmaceutical Chemistry</li>
-    <li>Pharmaceutical Engineering</li>
-    <li>Pharmaceutical Analysis</li>
-    <li>Pharmacokinetics</li>
-    <li>Industrial Pharmacy</li>
-  </ul>
-</section>
-
-<section class="card" id="references">
-  <h2>References and Learning Resources</h2>
-  <ul>
-    <li><a href="https://www.who.int/">WHO</a></li>
-    <li><a href="https://www.ncbi.nlm.nih.gov/">NCBI</a></li>
-    <li><a href="https://pubmed.ncbi.nlm.nih.gov/">PubMed</a></li>
-    <li><a href="https://cdsco.gov.in/">CDSCO</a></li>
-  </ul>
-</section>
-
-<section class="card" id="disclaimer">
-  <h2>Educational Disclaimer</h2>
-  <p>PHARMAPEDIA provides educational information about pharmaceutical sciences. It is not a substitute for professional medical advice or treatment.</p>
-</section>
-
-<section class="card" id="contact">
-  <h2>Contact and Feedback</h2>
-  <p>We welcome suggestions, corrections and feedback.</p>
-  <p>Project email: Coming soon.</p>
-</section>
 <footer id="foot"></footer>
 </main>
 <script>
@@ -159,6 +113,9 @@ const META=[
 // Sources and permissions table shown at the bottom of the page: {name, url, license, checked}
 const SOURCES=[];
 
+// Names used to look each medicine up in openFDA (same order as the list above). null = no US label lookup.
+const FDA=["acetaminophen","ibuprofen","cetirizine",null,"omeprazole","amoxicillin"];
+
 const norm=s=>s.normalize("NFC").toLowerCase().replace(/[\s.\-_()]/g,"");
 D.forEach(d=>{d.keys=[d.n.en,d.n.hi,d.n.gu,...d.br,...d.al].map(a=>[a,norm(a)]);d.keys.push(["Paracetamol".length?d.n.en.split(" ")[0]:"",norm(d.n.en.split(" ")[0])])});
 function lev(a,b){const m=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=m[0];m[0]=i;for(let j=1;j<=b.length;j++){const t=m[j];m[j]=Math.min(m[j]+1,m[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t}}return m[b.length]}
@@ -170,7 +127,7 @@ function card({d,via},i){const u=UI[L];const same=norm(via)===norm(d.n[L]);const
 return `<article class="card"><h2>${esc(d.n[L])}</h2><div class="meta"><span>${esc(d.c[L])}</span>${d.rx?`<span class="tag">${u.rx}</span>`:""}${same?"":`<span class="match">${u.via}: ${esc(via)}</span>`}</div>
 <h3>${u.use}</h3><p>${esc(d.u[L])}</p><h3>${u.dose}</h3><p>${esc(ds.h[L])}</p><h3>${u.max}</h3><p class="caution">${esc(ds.m[L])}</p><p class="note" style="margin-top:8px">${u.kid}</p><h3>${u.cau}</h3><p class="caution">${esc(d.w[L])}</p>
 <h3>${u.br}</h3><p>${d.br.map(esc).join(", ")}</p><p class="note" style="margin-top:10px">${u.gen}</p>
-${metaHtml(d)}<div class="row"><button class="listen" data-i="${i}">${u.listen}</button><span class="note" id="nv${i}"></span></div></article>`}
+${metaHtml(d)}${fdaHtml(d,i)}<div class="row"><button class="listen" data-i="${i}">${u.listen}</button><span class="note" id="nv${i}"></span></div></article>`}
 function metaHtml(d){const m=META[D.indexOf(d)]||{};
 const s=(m.sources||[]).map(x=>x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`:esc(x.name)).join(", ");
 return `<p class="note" style="margin-top:12px">${m.status==="verified"?"✔ Verified":"⚠ Draft, not yet verified"}${m.reviewed?" · Reviewed by "+esc(m.reviewed):""}${s?" · Sources: "+s:""}</p>`}
@@ -194,6 +151,60 @@ if(l){L=l.dataset.l;if(window.speechSynthesis)speechSynthesis.cancel();speaking=
 else if(c){$("q").value=D[c.dataset.c].n.en.split(" ")[0];render()}
 else if(s)speak(+s.dataset.i)});
 render();
+// ===== Official US FDA label panel (loaded live from openFDA when the user clicks) =====
+function pickLabel(rs){rs=rs||[];return rs.find(r=>r.indications_and_usage&&r.dosage_and_administration&&((r.openfda||{}).substance_name||[]).length===1)||rs[0]||null}
+function clip(a,n){const t=(Array.isArray(a)?a.join(" "):a||"").replace(/\s+/g," ").trim();return t.length>n?t.slice(0,n).replace(/\s\S*$/,"")+"…":t}
+function fdaHtml(d,i){const k=FDA[D.indexOf(d)];
+if(!k)return `<p class="note" style="margin-top:8px">No US FDA label lookup for this item.</p>`;
+return `<details class="fda"><summary>Official US FDA label (English)</summary><div id="fda${i}" class="fdabox"><button class="listen" data-f="${i}" data-k="${esc(k)}">Load label from openFDA</button></div></details>`}
+async function loadFda(i,k){const box=document.getElementById("fda"+i);box.textContent="Loading…";
+const link=`https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=${encodeURIComponent(k)}`,a=`<a href="${link}" target="_blank" rel="noopener">Search DailyMed</a>`;
+try{const r=await fetch(`https://api.fda.gov/drug/label.json?search=openfda.generic_name:%22${encodeURIComponent(k)}%22&limit=10`);
+if(r.status===404){box.innerHTML="No label found. "+a;return}
+if(!r.ok)throw new Error("HTTP "+r.status);
+const j=await r.json(),L=pickLabel(j.results);if(!L){box.innerHTML="No label found. "+a;return}
+const o=L.openfda||{},t=L.effective_time||"",dt=t.length===8?`${t.slice(0,4)}-${t.slice(4,6)}-${t.slice(6)}`:"unknown";
+const sec=(h,x)=>x?`<h3>${h}</h3><p class="fdatxt">${esc(clip(x,900))}</p>`:"";
+box.innerHTML=`<p class="note">Product: ${esc((o.brand_name||[k])[0])} · Manufacturer: ${esc((o.manufacturer_name||["unknown"])[0])} · Label date: ${dt}</p>`
++sec("Indications",L.indications_and_usage)+sec("Dosage and administration",L.dosage_and_administration)+sec("Warnings",L.boxed_warning||L.warnings||L.warnings_and_cautions)
++`<p class="note">Source: U.S. FDA (openFDA), fetched ${new Date().toISOString().slice(0,10)}. This is a US label in English. It may differ from the Indian label and is not medical advice. ${a}</p>`}
+catch(e){box.innerHTML=`Could not load the label (${esc(String(e.message||e))}). `+a}}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(b)loadFda(+b.dataset.f,b.dataset.k)});
+
+// ===== Search ANY drug in openFDA when it is not in our own list =====
+const FDA_ALIAS={paracetamol:"acetaminophen",salbutamol:"albuterol",adrenaline:"epinephrine",noradrenaline:"norepinephrine",frusemide:"furosemide",glibenclamide:"glyburide",pethidine:"meperidine",lignocaine:"lidocaine",rifampicin:"rifampin",amoxycillin:"amoxicillin",cetrizine:"cetirizine"};
+let fdaTimer=0,fdaSeq=0;
+const tc=s=>s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+function labelBody(L){const sec=(h,x)=>x?`<h3>${h}</h3><p class="fdatxt">${esc(clip(x,900))}</p>`:"";
+return sec("Indications",L.indications_and_usage)+sec("Dosage and administration",L.dosage_and_administration)+sec("Warnings",L.boxed_warning||L.warnings||L.warnings_and_cautions)}
+async function fdaSearch(raw,slot){const my=++fdaSeq;
+slot.innerHTML=`<p class="note">Searching the official FDA database…</p>`;
+const q0=raw.toLowerCase().trim().replace(/\s+/g," "),q=FDA_ALIAS[q0]||q0,e=encodeURIComponent(q);
+const a=`<a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=${e}" target="_blank" rel="noopener">Search DailyMed</a>`;
+const tries=[`openfda.generic_name:%22${e}%22+OR+openfda.brand_name:%22${e}%22`];
+if(!q.includes(" "))tries.push(`openfda.generic_name:${e}*+OR+openfda.brand_name:${e}*`);
+try{let res=[];
+for(const t of tries){const r=await fetch(`https://api.fda.gov/drug/label.json?limit=25&search=${t}`);
+if(my!==fdaSeq)return;
+if(r.status===404)continue;if(!r.ok)throw new Error("HTTP "+r.status);
+res=(await r.json()).results||[];if(res.length)break}
+if(my!==fdaSeq)return;
+if(!res.length){slot.innerHTML=`<p class="note">No official US label found for “${esc(raw)}”. Check the spelling or try the generic name. ${a}</p>`;return}
+const g={};res.forEach(L=>{const o=L.openfda||{},k=((o.generic_name||[])[0]||"unknown").toLowerCase();(g[k]=g[k]||[]).push(L)});
+const today=new Date().toISOString().slice(0,10);
+slot.innerHTML=`<p class="note">From the official US FDA database (openFDA), fetched ${today}. US labels, English only, not reviewed by us, and they may differ from Indian labels. Not medical advice.</p>`
++Object.keys(g).slice(0,5).map(k=>{const L=pickLabel(g[k]),o=L.openfda||{},t=L.effective_time||"",dt=t.length===8?`${t.slice(0,4)}-${t.slice(4,6)}-${t.slice(6)}`:"unknown";
+return `<details class="fda" open><summary>${esc(tc(k))}</summary><div class="fdabox"><p class="note">Brand: ${esc((o.brand_name||["unknown"])[0])} · Manufacturer: ${esc((o.manufacturer_name||["unknown"])[0])} · Label date: ${dt}</p>${labelBody(L)}</div></details>`}).join("")
+}catch(err){if(my===fdaSeq)slot.innerHTML=`Could not reach the FDA database (${esc(String(err.message||err))}). Check your internet connection. ${a}`}}
+const _render=render;
+render=function(){_render();clearTimeout(fdaTimer);const raw=$("q").value.trim();
+if(raw.length<3||!/^[A-Za-z0-9 \-]+$/.test(raw))return;
+const slot=document.createElement("div");slot.id="fdaAny";$("out").appendChild(slot);
+if(!cur.length){const em=$("out").querySelector(".empty");if(em)em.style.display="none";
+slot.innerHTML=`<p class="note">Not in our list. Searching the official FDA database…</p>`;fdaTimer=setTimeout(()=>fdaSearch(raw,slot),700)}
+else slot.innerHTML=`<button class="listen" id="fdaBtn">Also search the official FDA database for “${esc(raw)}”</button>`};
+document.addEventListener("click",e=>{if(e.target.closest("#fdaBtn"))fdaSearch($("q").value.trim(),$("fdaAny"))});
+
 </script>
 </body>
 </html>
